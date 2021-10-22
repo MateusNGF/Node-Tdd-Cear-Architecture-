@@ -1,10 +1,18 @@
 class LoginRouter {
     route(httpRequest) {
-        const { email, password } = httpRequest.body
-        if (!email || !password) {
+       
+        try {
+            if (!httpRequest || !httpRequest.body)
+                throw { code: 500, msg: "Body of request not provided" }
+
+            const { email, password } = httpRequest.body
+            
+            if (!email) throw { code: 400, msg: "Email not provided" }
+            if (!password) throw { code: 400, msg: "Password not provided" }
+        } catch (e) {
             return {
-                statusCode: 400,
-                message : "Not found email orh pass"
+                statusCode: e.code,
+                message : e.msg
             }
         }
     }
@@ -35,5 +43,17 @@ describe('Login Router', () => {
         const httpResponse = sut.route(httpRequest)
         expect(httpResponse.statusCode).toBe(400)
     })
+
+    test('should return 500 if no httpRequest is provided', () => {
+        const sut = new LoginRouter()
+        const httpResponse = sut.route()
+        expect(httpResponse.statusCode).toBe(500)
+    });
+
+    test('should return 500 if no httpRequest is empty', () => {
+        const sut = new LoginRouter()
+        const httpResponse = sut.route({})
+        expect(httpResponse.statusCode).toBe(500)
+    });
 
 })
