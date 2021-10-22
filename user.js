@@ -6,6 +6,11 @@ module.exports = () => {
     router.post('/access', ExpressRouterAdpter.adapt(direction))
 }
 
+/**
+ * Acabaria se tornando um middware para o express.
+ * Contudo, se assim fizesse ainda se condicionaria ao express.
+ * 
+ */
 class ExpressRouterAdpter {
     static adapt(direction) {
         return async (req, res) => {
@@ -24,6 +29,9 @@ class ExpressRouterAdpter {
 
 // PRESENTECION
 
+/**
+ * Responsavel por fazer a minupulação 
+ */
 class AccessRouter {
     async route(httpRequest) {
         const user = new AccessUseCases().Access(httpRequest.body)

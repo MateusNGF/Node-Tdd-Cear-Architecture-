@@ -13,6 +13,21 @@ class HttpCode {
             message
         }
     }
+
+    static unauthorization_lowLevel(message) {
+        throw {
+            code: 401,
+            name: "unauthorization",
+            message
+        }
+    }
+    static unauthorization_hightLevel(message) {
+        throw {
+            code: 403,
+            name: "unauthorization",
+            message
+        }
+    }
 }
 
 module.exports = HttpCode
