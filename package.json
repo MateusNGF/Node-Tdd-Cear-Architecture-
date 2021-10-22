@@ -1,0 +1,23 @@
+{
+  "name": "node-tdd-cear-architecture-",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MateusNGF/Node-Tdd-Cear-Architecture-.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MateusNGF/Node-Tdd-Cear-Architecture-/issues"
+  },
+  "homepage": "https://github.com/MateusNGF/Node-Tdd-Cear-Architecture-#readme",
+  "devDependencies": {
+    "jest": "^27.3.1"
+  }
+}
