@@ -47,15 +47,6 @@ describe('\n ========== Login Router =========== \n', () => {
         expect(httpResponse.statusCode).toBe(500)
     });
 
-    test('should return 500 if HttpRequest body is empty', () => {
-        const { sut } = makeInst()
-        const httpRequest = {
-            body: {}
-        }
-        const httpResponse = sut.route(httpRequest)
-        expect(httpResponse.statusCode).toBe(500)
-    });
-
     // TESTANDO OS DADOS DO USUARIOS
 
     test('should call AuthUseCase with correct params', () => {

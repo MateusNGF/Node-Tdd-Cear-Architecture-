@@ -1,35 +1,31 @@
 class HttpCodeError {
     static BadRequest(message) {
-        console.log(message)
-        throw {
-            code: 400,
+        return {
+            statusCode: 400,
             name: "Bad Request",
             message,
         }
     }
 
     static serverError(message) {
-        console.log(message)
-        throw {
-            code: 500,
+        return {
+            statusCode: 500,
             name: "Server Error",
             message
         }
     }
 
     static unauthorization_lowLevel(message) {
-        console.log(message)
-        throw {
-            code: 401,
+        return {
+            statusCode: 401,
             name: "unauthorization",
             message
         }
     }
 
     static unauthorization_hightLevel(message) {
-        console.log(message)
-        throw {
-            code: 403,
+        return {
+            statusCode: 403,
             name: "unauthorization",
             message
         }
