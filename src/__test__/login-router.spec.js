@@ -1,6 +1,13 @@
 const LoginRouter = require("../routers/User/loginRouter")
 
 const makeInst = () => {
+    const authUseCase = makeAuthUseCase()
+    const sut = new LoginRouter(authUseCase)
+
+    return { sut, authUseCase }
+}
+
+const makeAuthUseCase = () => {
     class AuthUseCase {
         auth(request) {
             this.email = request.body.email
@@ -9,11 +16,16 @@ const makeInst = () => {
             return this.token
         }
     }
+    return new AuthUseCase()
+}
 
-    const authUseCase = new AuthUseCase()
-    const sut = new LoginRouter(authUseCase)
-
-    return { sut, authUseCase }
+const makeAuthUseCaseWithError = () => {
+    class AuthUseCase {
+        auth() {
+            throw { message: "Auth with error" }
+        }
+    }
+    return new AuthUseCase()
 }
 
 describe('\n ========== Login Router =========== \n', () => {
@@ -101,6 +113,16 @@ describe('\n ========== Login Router =========== \n', () => {
 
     test('should return 500 if authUseCase is Objetc empty', () => {
         const sut = new LoginRouter({})
+        const HttpRequest = {
+            body: { email: "invalid_email@gmail.com", password: "invalid_password" }
+        }
+        const httpResponse = sut.route(HttpRequest)
+        expect(httpResponse.statusCode).toBe(500)
+    });
+
+    test('should return 500 if authUseCase has throw', () => {
+        const authUseCaseWithError = makeAuthUseCaseWithError()
+        const sut = new LoginRouter(authUseCaseWithError)
         const HttpRequest = {
             body: { email: "invalid_email@gmail.com", password: "invalid_password" }
         }
