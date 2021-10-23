@@ -4,13 +4,13 @@ class LoginRouter {
 
     constructor(authUseCase) { this.authUseCase = authUseCase }
 
-    route(httpRequest) {
+    async route(httpRequest) {
         try {
             const { email, password } = httpRequest.body
             if (!email) return HttpCodeError.BadRequest("Email not provided")
             if (!password) return HttpCodeError.BadRequest("Password not provided")
 
-            const keyAccessToken = this.authUseCase.auth(httpRequest)
+            const keyAccessToken = await this.authUseCase.auth(httpRequest)
             if (!keyAccessToken)
                 return HttpCodeError.unauthorization_lowLevel("Access denied")
 
