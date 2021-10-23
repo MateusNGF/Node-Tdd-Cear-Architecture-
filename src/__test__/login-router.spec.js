@@ -2,9 +2,11 @@ const LoginRouter = require("../routers/User/loginRouter")
 
 const makeInst = () => {
     class AuthUseCase {
-        auth(info) {
-            this.email = info.email
-            this.password = info.password
+        auth(request) {
+            this.email = request.body.email
+            this.password = request.body.password
+            this.token = request.header['x-access-token']
+            return this.token
         }
     }
 
@@ -18,7 +20,7 @@ describe('\n ========== Login Router =========== \n', () => {
     test('Should return 400 if no email is provided', () => {
         const { sut } = makeInst()
         const httpRequest = {
-            body: { password: 'any pass' }
+            body: { password: "senhaValida" }
         }
 
         const httpResponse = sut.route(httpRequest)
@@ -27,7 +29,7 @@ describe('\n ========== Login Router =========== \n', () => {
     test('Should return 400 if no passwords is provided', () => {
         const { sut } = makeInst()
         const httpRequest = {
-            body: { email: 'any email' }
+            body: { email: "any_email@gmail.com" }
         }
         const httpResponse = sut.route(httpRequest)
         expect(httpResponse.statusCode).toBe(400)
@@ -72,10 +74,29 @@ describe('\n ========== Login Router =========== \n', () => {
     test('should return 401 when invalid credentials are provides', () => {
         const { sut } = makeInst()
         const httpRequest = {
-            body: { email: "invalid_email@gmail.com", password: "invalid_password" }
+            body: {
+                email: "invalid_email@gmail.com",
+                password: "invalid_password"
+            },
+            header: { "x-access-token": null }
         }
         const httpResponse = sut.route(httpRequest)
         expect(httpResponse.statusCode).toBe(401)
+    });
+
+    test('should return 200 when valid credentials are provides', () => {
+        const { sut } = makeInst()
+        const httpRequest = {
+            body: {
+                email: "invalid_email@gmail.com",
+                password: "invalid_password"
+            },
+            header: {
+                'x-access-token': "token_valid"
+            }
+        }
+        const httpResponse = sut.route(httpRequest)
+        expect(httpResponse.statusCode).toBe(200)
     });
 
     test('should return 500 if authUseCase is undefined', () => {
@@ -84,6 +105,15 @@ describe('\n ========== Login Router =========== \n', () => {
             body: { email: "invalid_email@gmail.com", password: "invalid_password" }
         }
         const httpResponse = sut.route(httpRequest)
+        expect(httpResponse.statusCode).toBe(500)
+    });
+
+    test('should return 500 if authUseCase is Objetc empty', () => {
+        const sut = new LoginRouter({})
+        const HttpRequest = {
+            body: { email: "invalid_email@gmail.com", password: "invalid_password" }
+        }
+        const httpResponse = sut.route(HttpRequest)
         expect(httpResponse.statusCode).toBe(500)
     });
 })

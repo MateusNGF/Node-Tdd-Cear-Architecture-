@@ -1,4 +1,4 @@
-const HttpCode = require('../../helpers/HttpCode')
+const HttpCodeError = require('../../helpers/HttpCodeError')
 
 class LoginRouter {
 
@@ -6,19 +6,26 @@ class LoginRouter {
 
     route(httpRequest) {
         try {
+
             if (!httpRequest || !this.authUseCase)
-                HttpCode.serverError('HttpRequest not is provided')
+                HttpCodeError.serverError('HttpRequest not is provided')
+            if (!this.authUseCase.auth)
+                HttpCodeError.serverError("method auth is required")
             if (!httpRequest.body)
-                HttpCode.serverError('Body not is provided')
+                HttpCodeError.serverError('Body not is provided')
             if (Object.keys(httpRequest.body).length < 1)
-                HttpCode.serverError("Body is empty")
+                HttpCodeError.serverError("Body is empty")
+
 
             const { email, password } = httpRequest.body
+            if (!email) HttpCodeError.BadRequest("Email not provided")
+            if (!password) HttpCodeError.BadRequest("Password not provided")
 
-            if (!email) HttpCode.BadRequest("Email not provided")
-            if (!password) HttpCode.BadRequest("Password not provided")
 
-            this.authUseCase.auth(httpRequest.body)
+            const keyAccessToken = this.authUseCase.auth(httpRequest)
+            if (!keyAccessToken) HttpCodeError.unauthorization_lowLevel("Access denied")
+
+            return { statusCode: 200 }
 
         } catch (e) {
             return {
