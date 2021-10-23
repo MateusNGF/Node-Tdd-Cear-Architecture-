@@ -2,13 +2,25 @@ const LoginRouter = require("../routers/User/loginRouter")
 
 const makeInst = () => {
     const authUseCase = makeAuthUseCase()
-    const sut = new LoginRouter(authUseCase)
+    const emailValidator = makeEmailServices()
+    const sut = new LoginRouter(authUseCase, emailValidator)
 
-    return { sut, authUseCase }
+    return { sut, authUseCase, emailValidator }
+}
+const makeEmailServices = () => {
+    class EmailServicesSpy {
+        isValid(email) {
+            return this.isEmailValid
+        }
+    }
+
+    const emailValidator = new EmailServicesSpy()
+    emailValidator.isEmailValid = true;
+    return emailValidator;
 }
 
 const makeAuthUseCase = () => {
-    class AuthUseCase {
+    class AuthUseCaseSpy {
         async auth(request) {
             this.email = request.body.email
             this.password = request.body.password
@@ -16,38 +28,20 @@ const makeAuthUseCase = () => {
             return this.token
         }
     }
-    return new AuthUseCase()
+    return new AuthUseCaseSpy()
 }
 
 const makeAuthUseCaseWithError = () => {
-    class AuthUseCase {
+    class AuthUseCaseSpy {
         async auth() {
             throw { message: "Auth with error" }
         }
     }
-    return new AuthUseCase()
+    return new AuthUseCaseSpy()
 }
 
 describe('\n ========== Login Router =========== \n', () => {
-    test('Should return 400 if no email is provided', async () => {
-        const { sut } = makeInst()
-        const httpRequest = {
-            body: { password: "senhaValida" }
-        }
-
-        const httpResponse = await sut.route(httpRequest)
-        expect(httpResponse.statusCode).toBe(400)
-    })
-    test('Should return 400 if no passwords is provided', async () => {
-        const { sut } = makeInst()
-        const httpRequest = {
-            body: { email: "any_email@gmail.com" }
-        }
-        const httpResponse = await sut.route(httpRequest)
-        expect(httpResponse.statusCode).toBe(400)
-    })
-
-    test('should return 500 if no httpRequest is provided', async () => {
+    test('should return 500 if not httpRequest is provided', async () => {
         const { sut } = makeInst()
         const httpResponse = await sut.route()
         expect(httpResponse.statusCode).toBe(500)
@@ -58,6 +52,39 @@ describe('\n ========== Login Router =========== \n', () => {
         const httpResponse = await sut.route({})
         expect(httpResponse.statusCode).toBe(500)
     });
+
+    test('Should return 400 if no email is provided', async () => {
+        const { sut } = makeInst()
+        const httpRequest = {
+            body: { password: "senhaValida" }
+        }
+
+        const httpResponse = await sut.route(httpRequest)
+        expect(httpResponse.statusCode).toBe(400)
+    })
+
+    test('should return 400 if email is invalid', async () => {
+        const emailValidator = makeEmailServices()
+        const authUseCase = makeAuthUseCase()
+
+        emailValidator.isEmailValid = false
+
+        const sut = new LoginRouter(authUseCase, emailValidator)
+        const HttpRequest = {
+            body: { email: "invalid_email@gmail.com", password: "invalid_password" },
+        }
+        const httpResponse = await sut.route(HttpRequest)
+        expect(httpResponse.statusCode).toBe(400)
+    });
+
+    test('Should return 400 if no passwords is provided', async () => {
+        const { sut } = makeInst()
+        const httpRequest = {
+            body: { email: "any_email@gmail.com" }
+        }
+        const httpResponse = await sut.route(httpRequest)
+        expect(httpResponse.statusCode).toBe(400)
+    })
 
     // TESTANDO OS DADOS DO USUARIOS
 
@@ -129,4 +156,25 @@ describe('\n ========== Login Router =========== \n', () => {
         const httpResponse = await sut.route(HttpRequest)
         expect(httpResponse.statusCode).toBe(500)
     });
+
+    test('should return 500 if no EmailServices is provided', async () => {
+        const authUseCase = makeAuthUseCase()
+        const sut = new LoginRouter(authUseCase)
+        const httpRequest = {
+            body: { email: "invalid_email@gmail.com", password: "invalid_password" }
+        }
+        const httpResponse = await sut.route(httpRequest)
+        expect(httpResponse.statusCode).toBe(500)
+    });
+
+    test('should return 500 if EmailServices no has isValid method', async () => {
+        const authUseCase = makeAuthUseCase()
+        const sut = new LoginRouter(authUseCase, {})
+        const httpRequest = {
+            body: { email: "invalid_email@gmail.com", password: "invalid_password" }
+        }
+        const httpResponse = await sut.route(httpRequest)
+        expect(httpResponse.statusCode).toBe(500)
+    });
+
 })
